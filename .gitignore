@@ -1,5 +1,9 @@
 *.bat
 *.exe
+*.exe~
+*.bat~
 build/
 /build
 *.sln
+*.sln~
+*.cpp~
