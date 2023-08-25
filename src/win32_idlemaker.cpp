@@ -9,12 +9,22 @@ LRESULT CALLBACK Win32Wndproc(
 			      ) {
   LRESULT Result = 0;
   switch(Message) {
-  case WM_CREATE:
+  case WM_CLOSE:
     {
+      DestroyWindow(Window);
       OutputDebugStringA("WM_SIZE\n");
     } break;
   case WM_PAINT:
     {
+
+      PAINTSTRUCT Paint;
+      HDC DeviceContext = BeginPaint(Window, &Paint);
+      int X = Paint.rcPaint.right;
+      int Y = Paint.rcPaint.bottom;
+      int Width = Paint.rcPaint.right - Paint.rcPaint.left;
+      int Height = Paint.rcPaint.bottom - Paint.rcPaint.top;;
+      PatBlt(DeviceContext, X, Y, Width, Height, BLACKNESS);
+      EndPaint(Window, &Paint);
       OutputDebugStringA("WM_SIZE\n");     
     } break;
   case WM_SIZE:
@@ -23,6 +33,7 @@ LRESULT CALLBACK Win32Wndproc(
     } break;
   case WM_DESTROY:
     {
+      PostQuitMessage(0);
       OutputDebugStringA("WM_SIZE\n");
     } break;
   default:
@@ -53,7 +64,7 @@ int WINAPI WinMain(
 				   0,
 				   WindowClass.lpszClassName,
 				   "IdleMaker",
-				   WS_OVERLAPPED|WS_VISIBLE,
+				   WS_OVERLAPPEDWINDOW|WS_VISIBLE,
 				   CW_USEDEFAULT,
 				   CW_USEDEFAULT,
 				   CW_USEDEFAULT,
