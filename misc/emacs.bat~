@@ -1,0 +1,2 @@
+@echo off
+"C:\msys64\mingw64\bin\runemacs.exe" -q -l "D:\projects\C\handmadeHero\misc\init.el"

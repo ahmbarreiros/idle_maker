@@ -1,0 +1,6 @@
+@echo off
+
+mkdir ..\build
+pushd ..\build
+cl -Zi X:\C\idlemaker\src\win32_idlemaker.cpp
+popd
