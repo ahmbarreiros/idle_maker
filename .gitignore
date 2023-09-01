@@ -8,3 +8,5 @@ build/
 *.sln~
 *.cpp~
 .gitignore~
+
+.vs/

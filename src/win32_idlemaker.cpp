@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <stdint.h>
+#include <xinput.h>
+
 
 #define  global_variable static
 #define  internal static
@@ -17,6 +19,25 @@ typedef uint32_t uint32;
 typedef uint64_t uint64;
 
 global_variable bool Running;
+
+#define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
+#define X_INPUT_SET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
+
+typedef X_INPUT_GET_STATE(x_input_get_state);
+typedef X_INPUT_SET_STATE(x_input_set_state);
+X_INPUT_GET_STATE(XInputGetStateStub) {
+  return 0;
+};
+
+X_INPUT_SET_STATE(XInputSetStateStub) {
+  return 0;
+};
+
+global_variable x_input_get_state *XInputGetState_ = XInputGetStateStub;
+global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
+
+#define  XInputGetState XInputGetState_
+#define  XInputSetState XInputSetState_
 
 struct win32_backbuffer {
   void * Memory;
@@ -121,6 +142,20 @@ LRESULT CALLBACK Win32Wndproc(
       Running = false;
       OutputDebugStringA("WM_CLOSE\n");
     } break;
+
+  case WM_KEYUP:
+    {
+      WPARAM VKCode = wParam;
+      if(VKCode == 'W') {
+	OutputDebugStringA("W\n");
+      }
+    } break;
+  case WM_KEYDOWN:
+    {} break;
+  case WM_SYSKEYUP:
+    {} break;
+  case WM_SYSKEYDOWN:
+    {} break;
   case WM_PAINT:
     {
 
@@ -194,6 +229,41 @@ int WINAPI WinMain(
 	  if(Message.message == WM_QUIT) {
 	    Running = false;
 	  }
+
+	  for(DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ControllerIndex++) { 
+	    XINPUT_STATE ControllerState;
+	    ZeroMemory(&ControllerState, sizeof(XINPUT_STATE));
+
+	    if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS) {
+	      // NOTE: Controller available
+	      XINPUT_GAMEPAD Pad = ControllerState.Gamepad;
+	      
+	      bool Up = (Pad.wButtons & XINPUT_GAMEPAD_DPAD_UP);
+	      bool Right = (Pad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
+	      bool Down = (Pad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
+	      bool Left = (Pad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
+	      bool Start = (Pad.wButtons & XINPUT_GAMEPAD_START);
+	      bool Back = (Pad.wButtons & XINPUT_GAMEPAD_BACK);
+	      bool LeftShoulder = (Pad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
+	      bool RightShoulder = (Pad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	      bool AButton = (Pad.wButtons & XINPUT_GAMEPAD_A);
+	      bool BButton = (Pad.wButtons & XINPUT_GAMEPAD_B);
+	      bool XButton = (Pad.wButtons & XINPUT_GAMEPAD_X);
+	      bool YButton = (Pad.wButtons & XINPUT_GAMEPAD_Y);
+
+	      int16 ThumbX = Pad.sThumbLX;
+	      int16 ThumbY = Pad.sThumbLY;
+
+	      if(AButton) {
+		YOffset += 2;
+	      }
+	      
+	      
+	    } else {
+	      // TODO: Controller not available
+	    }
+	  }
+	  
 	  TranslateMessage(&Message);
 	  DispatchMessage(&Message);
 	}

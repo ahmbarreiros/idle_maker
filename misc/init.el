@@ -4,7 +4,10 @@
 ;; Description: This is my personal emacs config file, keep in mind I am a total noob in emacs/elisp
 
 ; sets directory close to init.el
-(cd (getenv "HOME"))
+(cd "D:/projects/C/handmadeHero")
+
+; puts these emacs backup files elsewhere
+(setq backup-directory-alist '((".*" . "D:/projects/C/handmadeHero")))
 
 ;compilation
 (setq casey-aquamacs (featurep 'aquamacs))
@@ -22,11 +25,13 @@
   (setq casey-font "outline-Liberation Mono")
   )
 
-;(load-library "view")
+(load-library "view")
 (require 'cc-mode)
 (require 'ido)
 (require 'compile)
 ;(ido-mode t)
+
+
 
 ;(define-key global-map "\ef" 'find-file)
 (define-key global-map "\eF" 'find-file-other-window)
@@ -99,8 +104,6 @@
   (other-window 1))
 (define-key global-map "\em" 'make-without-asking)
 
-
-
 ; these noises are ridiculous
 (setq visible-bell t)
 (setq ring-bell-function 'ignore)
@@ -125,6 +128,9 @@
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
 
+; enables pair mode
+(electric-pair-mode 1)
+
 ; startup configuration
 (setq truncate-partial-width-windows nil)
 (setq next-line-add-newlines nil)
@@ -148,12 +154,3 @@
 (setq tab-width 4
       indent-tabs-mode nil)
 (windmove-default-keybindings 'meta)
-
-(put 'kill-process 'interactive-form
-     '(interactive
-       (let ((proc (get-buffer-process (current-buffer))))
-         (if (process-live-p proc)
-             (unless (yes-or-no-p (format "Kill %S? " proc))
-               (error "Process not killed"))
-           (error (format "Buffer %s has no process" (buffer-name))))
-         nil)))
