@@ -1,11 +1,14 @@
 #include <windows.h>
 #include <stdint.h>
 #include <xinput.h>
+#include <dsound.h>
+#include <math.h>
 
 
 #define  global_variable static
 #define  internal static
 #define  local_variable static
+#define PI 3.14159265359f
 
 typedef int8_t  int8;
 typedef int16_t int16;
@@ -69,7 +72,31 @@ internal void RenderGradient(win32_backbuffer Buffer, int BlueOffset, int GreenO
   }
 }
 
+internal void Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize) {
+  HMODULE DSoundLibrary = LoadLibrary("dsound.dll");
+  if(DSoundLibrary) {
+    DSBUFFERDESC PrimaryBuffer = {};
+    WAVEFORMATEX WaveFormat = {};
 
+    WaveFormat.wFormatTag = WAVE_FORMAT_PCM;
+    WaveFormat.nChannels = 2;
+    WaveFormat.nSamplesPerSec = SamplesPerSecond;
+    WaveFormat.wBitsPerSample = 16;
+    WaveFormat.nBlockAlign = (WaveFormat.nChannels * WaveFormat.wBitsPerSample) / 8;
+    waveFormat.nAvgBytesPerSec = (WaveFormat.nSamplesPerSec * WaveFormat.nBlockAlign);
+  
+  
+    PrimaryBuffer.dwSize = BufferSize;
+    PrimaryBuffer.dwFlags = DSBCAPS_PRIMARYBUFFER;
+    PrimaryBuffer.lpwfxFormat = &WaveFormat;
+    PrimaryBuffer.guid3dAlgorithm = GUID_NULL;
+
+    if(SUCCEEDED(CreateSoundBuffer(&PrimaryBuffer, , 0)))
+    
+      } else {
+    //TODO: ERROR - NO DSOUNDLIB
+  }
+}
 
 internal void Win32ResizeDIBSection(win32_backbuffer *Buffer, int Width, int Height) {
 

@@ -4,10 +4,10 @@
 ;; Description: This is my personal emacs config file, keep in mind I am a total noob in emacs/elisp
 
 ; sets directory close to init.el
-(cd "D:/projects/C/handmadeHero")
+(cd "D:/projects")
 
 ; puts these emacs backup files elsewhere
-(setq backup-directory-alist '((".*" . "D:/projects/C/handmadeHero")))
+(setq backup-directory-alist '((".*" . "~/.emacs.d/emacs-backup")))
 
 ;compilation
 (setq casey-aquamacs (featurep 'aquamacs))
