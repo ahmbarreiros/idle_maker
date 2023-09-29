@@ -36,6 +36,9 @@ X_INPUT_SET_STATE(XInputSetStateStub) {
   return 0;
 };
 
+#define DIRECT_SOUND_CREATE(name) HRESULT WINAPI name(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
+typedef DIRECT_SOUND_CREATE(direct_sound_create);
+
 global_variable x_input_get_state *XInputGetState_ = XInputGetStateStub;
 global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
 
@@ -75,27 +78,56 @@ internal void RenderGradient(win32_backbuffer Buffer, int BlueOffset, int GreenO
 internal void Win32InitDSound(HWND Window, int32 SamplesPerSecond, int32 BufferSize) {
   HMODULE DSoundLibrary = LoadLibrary("dsound.dll");
   if(DSoundLibrary) {
-    DSBUFFERDESC PrimaryBuffer = {};
-    WAVEFORMATEX WaveFormat = {};
+    direct_sound_create *DirectSoundCreate = (directsoundcreate *)GetProcAddress(DSoundLibrary, "DirectSoundCreate");
+    LPDIRECTSOUND DirectSound;
+    if(DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &DirectSound, 0))) {
+      WAVEFORMATEX WaveFormat = {};
 
-    WaveFormat.wFormatTag = WAVE_FORMAT_PCM;
-    WaveFormat.nChannels = 2;
-    WaveFormat.nSamplesPerSec = SamplesPerSecond;
-    WaveFormat.wBitsPerSample = 16;
-    WaveFormat.nBlockAlign = (WaveFormat.nChannels * WaveFormat.wBitsPerSample) / 8;
-    waveFormat.nAvgBytesPerSec = (WaveFormat.nSamplesPerSec * WaveFormat.nBlockAlign);
-  
-  
-    PrimaryBuffer.dwSize = BufferSize;
-    PrimaryBuffer.dwFlags = DSBCAPS_PRIMARYBUFFER;
-    PrimaryBuffer.lpwfxFormat = &WaveFormat;
-    PrimaryBuffer.guid3dAlgorithm = GUID_NULL;
+      WaveFormat.wFormatTag = WAVE_FORMAT_PCM;
+      WaveFormat.nChannels = 2;
+      WaveFormat.nSamplesPerSec = SamplesPerSecond;
+      WaveFormat.wBitsPerSample = 16;
+      WaveFormat.nBlockAlign = (WaveFormat.nChannels * WaveFormat.wBitsPerSample) / 8;
+      waveFormat.nAvgBytesPerSec = (WaveFormat.nSamplesPerSec * WaveFormat.nBlockAlign);
+      
+      if(SUCCEEDED(DirectSound->SetCooperativeLevel(Window, DSSCL_PRIORITY))) {
+	LPDIRECTSOUNDBUFFER PrimaryBuffer;
+	DSBUFFERDESCT BufferDescription = {};
+	
+	BufferDescription.dwSize = sizeof(BufferDescription);
+	BufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
-    if(SUCCEEDED(CreateSoundBuffer(&PrimaryBuffer, , 0)))
-    
+	if(SUCCEEDED(DirectSound->CreateSoundBuffer(&BufferDescription, &PrimaryBuffer, 0))) {
+	  if(SUCCEEDED(PrimaryBuffer->SetFormat(&WaveFormat))) {
+	    OutputDebugStringA("Primary Buffer");
+	  } else {
+	    // TODO: PRIMARY BUFFER FORMAT NOT SET
+	  }
+	} else {
+	  // TODO: PRIMARY BUFFER NOT CREATED
+	}
       } else {
-    //TODO: ERROR - NO DSOUNDLIB
-  }
+	// TODO: DSOUND COOPERATIVE LEVEL NOT SET
+      }
+      LPDIRECTSOUNDBUFFER SecondaryBuffer;
+      DSBUFFERDESCT BufferDescription = {};
+	
+      BufferDescription.dwSize = sizeof(BufferDescription);
+      BufferDescription.dwFlags = 0;
+      BufferDescription.dwBufferBytes = BufferSize;
+      BufferDescription.lpwfxFormat = &WaveFormat;
+
+      if(SUCCEEDED(DirectSound->CreateSoundBuffer(&BufferDescription, &SecondaryBuffer, 0))) {
+	OutputDebugStringA("Secondary Buffer");
+      } else {
+	// TODO: SECONDARY BUFFER NOT CREATED
+      }
+    } else {
+      // TODO: DSOUND NOT CREATED
+    }
+  } else {
+    // TODO: DSOUNDLIB NOT SET
+  } 
 }
 
 internal void Win32ResizeDIBSection(win32_backbuffer *Buffer, int Width, int Height) {
